@@ -2,6 +2,7 @@
 import { Inngest } from "inngest";
 import { connectDB } from "./db.js";
 import { User } from "../models/user.model.js";
+import { deleteStreamUser,upsertStreamUser} from "./stream.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "live-connect" });
@@ -16,7 +17,8 @@ const syncUser = inngest.createFunction(
     try {
       await connectDB();
 
-      const { id, email_addresses, first_name, last_name, image_url } = event.data;
+      const { id, email_addresses, first_name, last_name, image_url } =
+        event.data;
 
       const newUser = {
         clerkId: id,
@@ -28,6 +30,13 @@ const syncUser = inngest.createFunction(
       await step.run("save-user", async () => {
         return await User.create(newUser);
       });
+      await upsertStreamUser({
+        id: newUser.clerkId.toString(),
+        name: newUser.name,
+        image: newUser.image,
+      });
+
+      await addUserToPublicChannels(newUser.clerkId.toString());
 
       console.log("✅ User synced:", newUser.email);
       return { success: true };
@@ -38,9 +47,7 @@ const syncUser = inngest.createFunction(
   }
 );
 
-/**
- * Delete user from MongoDB when Clerk user is deleted
- */
+
 const deleteUserFromDB = inngest.createFunction(
   { id: "delete-user-from-db" },
   { event: "clerk/user.deleted" },
@@ -53,6 +60,7 @@ const deleteUserFromDB = inngest.createFunction(
       await step.run("delete-user", async () => {
         return await User.deleteOne({ clerkId: id });
       });
+      await deleteStreamUser(id.toString());
 
       console.log("🗑️ User deleted:", id);
       return { success: true };
