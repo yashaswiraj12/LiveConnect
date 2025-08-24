@@ -118,6 +118,7 @@ const CreateChannelModal = ({ onClose }) => {
       const channel = client.channel("messaging", channelId, channelData);
 
       await channel.watch();
+    //   watch will listen to real time update 
 
       setActiveChannel(channel);
       setSearchParams({ channel: channelId });
