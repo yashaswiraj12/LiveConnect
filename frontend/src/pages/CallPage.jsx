@@ -37,7 +37,8 @@ const CallPage = () => {
 
   useEffect(() => {
     const initCall = async () => {
-      if (!tokenData.token || !user || !callId) return;
+      const token = tokenData?.token || tokenData;
+      if (!token || !user || !callId) return;
 
       try {
         const videoClient = new StreamVideoClient({
