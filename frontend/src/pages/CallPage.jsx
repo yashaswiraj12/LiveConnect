@@ -48,7 +48,7 @@ const CallPage = () => {
             name: user.fullName,
             image: user.imageUrl,
           },
-          token: tokenData.token,
+          token: token,
         });
 
         const callInstance = videoClient.call("default", callId);
