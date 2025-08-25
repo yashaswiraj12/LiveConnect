@@ -1,10 +1,8 @@
 // https://slack-pues.vercel.app/api
 
 import axios from "axios";
-const BASE_URL =
-  import.meta.env.MODE === "development"
-    ? "http://localhost:5001/api"
-    : "https://slack-pues.vercel.app/api";
+
+const BASE_URL= import.meta.env.VITE_BASE_URL
 
 
 export const axiosInstance = axios.create({
